@@ -1,192 +1,192 @@
-# Projet : Analyse de graphes orientés pondérés avec l'algorithme de Floyd-Warshall
+# Project: Analysis of Weighted Directed Graphs Using the Floyd-Warshall Algorithm
 
-## 1. Objectif général du programme
+## 1. General Objective of the Program
 
-Ce programme en langage C permet d'analyser des graphes orientés pondérés à partir de fichiers texte.
+This C-language program is designed to analyze weighted directed graphs from text files.
 
-Il automatise les étapes suivantes :
+It automates the following tasks:
 
-1. Recherche de tous les fichiers texte (`.txt`) présents dans le répertoire courant.
-2. Choix interactif d'un fichier par l'utilisateur.
-3. Lecture de plusieurs graphes contenus dans ce fichier (un fichier peut en contenir plusieurs à la suite).
-4. Stockage de chaque graphe en mémoire sous forme de matrice d'adjacence.
-5. Affichage de tous les graphes disponibles et choix d'un graphe particulier.
-6. Application de l'algorithme de Floyd-Warshall au graphe choisi :
-   - calcul des plus courts chemins entre tous les couples de sommets,
-   - affichage des matrices intermédiaires à chaque étape de l'algorithme (matrices L et P),
-   - détection d'éventuels circuits absorbants (cycles de poids total négatif).
-7. Si aucun circuit absorbant n'est présent :
-   - interface interactive permettant de demander un plus court chemin entre deux sommets choisis,
-   - affichage de la longueur du chemin minimal,
-   - reconstruction du chemin lui-même (séquence des sommets traversés).
-8. Possibilité de traiter plusieurs graphes successivement sans quitter le programme.
+1. Searching for all text files (`.txt`) present in the current directory.
+2. Allowing the user to interactively choose a file.
+3. Reading multiple graphs contained in the selected file (a single file may contain several graphs consecutively).
+4. Storing each graph in memory using an adjacency matrix representation.
+5. Displaying all available graphs and allowing the user to select a specific graph.
+6. Applying the Floyd-Warshall algorithm to the chosen graph:
+   - computing the shortest paths between every pair of vertices,
+   - displaying intermediate matrices at each step of the algorithm (L and P matrices),
+   - detecting possible negative cycles (absorbing circuits).
+7. If no negative cycle exists:
+   - interactive interface allowing the user to request the shortest path between two chosen vertices,
+   - displaying the minimal path length,
+   - reconstructing the actual path (sequence of visited vertices).
+8. Allowing the processing of multiple graphs successively without exiting the program.
 
-Le programme est conçu pour une équipe débutante en C : il illustre à la fois :
-- l'utilisation des bibliothèques standards du langage C,
-- la manipulation de fichiers texte,
-- les allocations dynamiques de mémoire,
-- la gestion de tableaux à deux dimensions (matrices),
-- l'implémentation d'un algorithme classique de théorie des graphes (Floyd-Warshall).
+This program is intended for beginner C programmers and demonstrates:
+- the use of standard C libraries,
+- text file manipulation,
+- dynamic memory allocation,
+- handling two-dimensional arrays (matrices),
+- implementation of a classic graph theory algorithm (Floyd-Warshall).
 
 ---
 
-## 2. Bibliothèques utilisées et rôle de chacune
+## 2. Libraries Used and Their Roles
 
-Le programme utilise plusieurs bibliothèques standards du C :
+The program uses several standard C libraries.
 
 ### 2.1. `<stdio.h>`
 
-Bibliothèque standard d'entrée-sortie. Elle fournit :
+Standard input/output library. It provides:
 
-| Fonction | Description |
+| Function | Description |
 |----------|-------------|
-| `printf` | Affichage formaté vers la sortie standard (le terminal) |
-| `scanf` | Lecture formatée depuis l'entrée standard (le clavier) |
-| `FILE` | Type représentant un fichier ouvert |
-| `fopen` | Ouverture d'un fichier |
-| `fclose` | Fermeture d'un fichier ouvert |
-| `fscanf` | Lecture formatée depuis un fichier |
+| `printf` | Formatted output to the standard output (terminal) |
+| `scanf` | Formatted input from the standard input (keyboard) |
+| `FILE` | Type representing an opened file |
+| `fopen` | Opens a file |
+| `fclose` | Closes an opened file |
+| `fscanf` | Formatted reading from a file |
 
 ### 2.2. `<stdlib.h>`
 
-Bibliothèque standard utilitaire. Elle fournit notamment :
+Standard utility library. It provides:
 
-| Fonction | Description |
+| Function | Description |
 |----------|-------------|
-| `malloc` | Allocation dynamique de mémoire (sur le tas / heap) |
-| `free` | Libération de la mémoire précédemment allouée par malloc |
+| `malloc` | Dynamic memory allocation (heap allocation) |
+| `free` | Frees memory previously allocated with malloc |
 
-Dans ce programme, `malloc` et `free` sont utilisés pour :
-- allouer les matrices d'adjacence des graphes,
-- allouer les matrices L et P de l'algorithme de Floyd-Warshall,
-- allouer les structures de type `Graphe`,
-- allouer les chaînes de caractères pour les noms de fichiers.
+In this program, `malloc` and `free` are used to:
+- allocate graph adjacency matrices,
+- allocate the L and P matrices of the Floyd-Warshall algorithm,
+- allocate `Graph` structures,
+- allocate character strings for file names.
 
 ### 2.3. `<stdbool.h>`
 
-Cette bibliothèque introduit :
+This library introduces:
 
-| Élément | Description |
+| Element | Description |
 |---------|-------------|
-| `bool` | Type booléen |
-| `true` | Équivalent à 1 |
-| `false` | Équivalent à 0 |
+| `bool` | Boolean type |
+| `true` | Equivalent to 1 |
+| `false` | Equivalent to 0 |
 
-Dans le programme, ce type est utilisé pour les variables logiques, par exemple `erreurLecture` dans la fonction `choixGraphe`.
+In the program, this type is used for logical variables such as `readError` in the `chooseGraph` function.
 
 ### 2.4. `<string.h>`
 
-Bibliothèque de gestion des chaînes de caractères. Elle fournit :
+String handling library. It provides:
 
-| Fonction | Description |
+| Function | Description |
 |----------|-------------|
-| `strlen` | Longueur d'une chaîne de caractères |
-| `strcmp` | Comparaison de deux chaînes (retourne 0 si identiques) |
-| `strcpy` | Copie d'une chaîne dans une autre |
+| `strlen` | Length of a string |
+| `strcmp` | Compares two strings (returns 0 if identical) |
+| `strcpy` | Copies a string into another |
 
-Ces fonctions sont utilisées dans `estTxt` et `choixTxt`.
+These functions are used in `isTxt` and `chooseTxt`.
 
 ### 2.5. `<dirent.h>`
 
-Bibliothèque permettant la manipulation des répertoires. Elle fournit :
+Directory manipulation library. It provides:
 
-| Élément | Description |
+| Element | Description |
 |---------|-------------|
-| `DIR` | Type représentant un répertoire ouvert |
-| `struct dirent` | Structure représentant une entrée de répertoire |
-| `opendir` | Ouverture d'un répertoire |
-| `readdir` | Lecture successive des entrées du répertoire |
-| `closedir` | Fermeture du répertoire |
+| `DIR` | Type representing an opened directory |
+| `struct dirent` | Structure representing a directory entry |
+| `opendir` | Opens a directory |
+| `readdir` | Reads directory entries successively |
+| `closedir` | Closes a directory |
 
 ### 2.6. `<limits.h>`
 
-Bibliothèque qui fournit des constantes sur les limites des types entiers (`INT_MAX`, `INT_MIN`, etc.).
+Library providing constants related to integer limits (`INT_MAX`, `INT_MIN`, etc.).
 
-Utilisée pour définir une valeur de "pseudo-infini" :
+Used to define a "pseudo-infinity" value:
 
 ```c
 #define INFINITY (INT_MAX / 4)
 ```
 
-> **Note :** On prend `INT_MAX / 4` au lieu de `INT_MAX` pour pouvoir encore additionner deux distances sans risque d'overflow.
+> **Note:** `INT_MAX / 4` is used instead of `INT_MAX` to avoid overflow when adding distances.
 
 ---
 
-## 3. Constantes, types et structures
+## 3. Constants, Types, and Structures
 
-### 3.1. Macros de configuration
+### 3.1. Configuration Macros
 
 ```c
 #define MAX_FILES 100
 #define MAX_LENGTH 256
-#define MAX_GRAPHES 100
+#define MAX_GRAPHS 100
 #define INFINITY (INT_MAX / 4)
 ```
 
 | Macro | Description |
 |-------|-------------|
-| `MAX_FILES` | Nombre maximal de fichiers `.txt` à lister |
-| `MAX_LENGTH` | Taille maximale d'un buffer pour lire des lignes |
-| `MAX_GRAPHES` | Nombre maximal de graphes traités en mémoire |
-| `INFINITY` | Valeur représentant "pas de chemin" ou "distance infinie" |
+| `MAX_FILES` | Maximum number of `.txt` files to list |
+| `MAX_LENGTH` | Maximum buffer size for reading lines |
+| `MAX_GRAPHS` | Maximum number of graphs stored in memory |
+| `INFINITY` | Value representing "no path" or "infinite distance" |
 
-### 3.2. Type `Graphe`
+### 3.2. `Graph` Type
 
 ```c
 typedef struct {
-    int nbSommets;
+    int nbVertices;
     int **adjMat;
-} Graphe;
+} Graph;
 ```
 
-| Champ | Description |
+| Field | Description |
 |-------|-------------|
-| `nbSommets` | Nombre de sommets du graphe (numérotés de 0 à n-1) |
-| `adjMat` | Matrice d'adjacence de taille n × n |
+| `nbVertices` | Number of graph vertices (numbered from 0 to n-1) |
+| `adjMat` | n × n adjacency matrix |
 
-La matrice d'adjacence `adjMat` est représentée comme un tableau de pointeurs (`int**`) :
-- `adjMat[i][j]` contient le poids de l'arête allant de `i` vers `j`
-- Si aucune arête directe n'existe, la case vaut 0 puis `INFINITY` dans les matrices de travail
-
----
-
-## 4. Description détaillée des fonctions
-
-### 4.1. `int estTxt(const char *nom)`
-
-**Rôle :** Déterminer si une chaîne de caractères `nom` se termine par l'extension `.txt`.
-
-**Algorithme :**
-1. Calcul de la longueur par `strlen(nom)`
-2. Si longueur < 4, retourne 0
-3. Compare les 4 derniers caractères à `.txt` avec `strcmp`
-4. Retourne 1 si correspondance, 0 sinon
+The adjacency matrix `adjMat` is represented as an array of pointers (`int**`):
+- `adjMat[i][j]` contains the weight of the edge from `i` to `j`
+- If no direct edge exists, the value is initially `0`, then replaced by `INFINITY` in working matrices
 
 ---
 
-### 4.2. `char* choixTxt(void)`
+## 4. Detailed Description of Functions
 
-**Rôle :** 
-- Lister tous les fichiers `.txt` dans le répertoire courant
-- Permettre à l'utilisateur de choisir l'un d'eux
-- Retourner le nom du fichier choisi (alloué dynamiquement)
+### 4.1. `int isTxt(const char *name)`
 
-**Algorithme :**
-1. Ouverture du répertoire courant avec `opendir(".")`
-2. Parcours des entrées avec `readdir(dir)`
-3. Filtrage avec `estTxt()`
-4. Affichage de la liste et choix utilisateur
-5. Retour du fichier choisi (à libérer avec `free`)
+**Purpose:** Determine whether a string `name` ends with the `.txt` extension.
+
+**Algorithm:**
+1. Compute the length using `strlen(name)`
+2. If length < 4, return 0
+3. Compare the last 4 characters to `.txt` using `strcmp`
+4. Return 1 if matching, otherwise 0
 
 ---
 
-### 4.3. `int** allouerMatrice(int n)` et `void libererMatrice(int **m, int n)`
+### 4.2. `char* chooseTxt(void)`
 
-**Rôle :** Allouer et libérer des matrices carrées n × n d'entiers.
+**Purpose:**
+- List all `.txt` files in the current directory
+- Allow the user to choose one
+- Return the selected file name (dynamically allocated)
 
-**allouerMatrice :**
+**Algorithm:**
+1. Open the current directory with `opendir(".")`
+2. Iterate through entries using `readdir(dir)`
+3. Filter entries with `isTxt()`
+4. Display the list and ask for user selection
+5. Return the chosen file name (must later be freed with `free`)
+
+---
+
+### 4.3. `int** allocateMatrix(int n)` and `void freeMatrix(int **m, int n)`
+
+**Purpose:** Allocate and free square integer matrices of size n × n.
+
+**allocateMatrix:**
 ```c
-int** allouerMatrice(int n) {
+int** allocateMatrix(int n) {
     int** m = malloc(n * sizeof(int*));
     for (int i = 0; i < n; i++) {
         m[i] = malloc(n * sizeof(int));
@@ -198,9 +198,9 @@ int** allouerMatrice(int n) {
 }
 ```
 
-**libererMatrice :**
+**freeMatrix:**
 ```c
-void libererMatrice(int **m, int n) {
+void freeMatrix(int **m, int n) {
     for (int i = 0; i < n; i++) {
         free(m[i]);
     }
@@ -210,94 +210,94 @@ void libererMatrice(int **m, int n) {
 
 ---
 
-### 4.4. `void afficherMatrice(int **m, int n)`
+### 4.4. `void displayMatrix(int **m, int n)`
 
-**Rôle :** Afficher proprement une matrice d'entiers n × n.
+**Purpose:** Display an integer matrix neatly.
 
-**Format d'affichage :**
-- Ligne d'en-tête avec les indices de colonnes
-- Pour chaque case : valeur entière ou `.` si `INFINITY`
-
----
-
-### 4.5. `Graphe* choixGraphe(const char *nomFichier)`
-
-**Rôle :** 
-- Lire plusieurs graphes dans un fichier
-- Les stocker et les afficher
-- Laisser l'utilisateur choisir celui à analyser
-- Retourner ce graphe
-
-**Algorithme détaillé :**
-1. Ouvrir le fichier avec `fopen(nomFichier, "r")`
-2. Pour chaque graphe :
-   - Lire `n` (nombre de sommets) et `m` (nombre d'arêtes)
-   - Allouer le graphe et sa matrice d'adjacence
-   - Lire les `m` arêtes (triplets `u v w`)
-3. Afficher tous les graphes disponibles
-4. Demander le choix utilisateur
-5. Libérer les graphes non sélectionnés
-6. Retourner le graphe choisi
+**Display format:**
+- Header row with column indices
+- Each cell displays either the integer value or `.` if equal to `INFINITY`
 
 ---
 
-### 4.6. `void afficherChemin(int u, int v, int **P)`
+### 4.5. `Graph* chooseGraph(const char *fileName)`
 
-**Rôle :** Afficher le chemin minimal de `u` à `v` en utilisant la matrice `P`.
+**Purpose:**
+- Read multiple graphs from a file
+- Store and display them
+- Let the user choose one graph
+- Return the selected graph
 
-**Algorithme :**
-1. Si `P[u][v] == -1` : pas de chemin
-2. Sinon : suivre les successeurs jusqu'à `v`
+**Detailed Algorithm:**
+1. Open the file with `fopen(fileName, "r")`
+2. For each graph:
+   - Read `n` (number of vertices) and `m` (number of edges)
+   - Allocate the graph and its adjacency matrix
+   - Read the `m` edges (`u v w`)
+3. Display all available graphs
+4. Ask for user selection
+5. Free all unselected graphs
+6. Return the chosen graph
 
 ---
 
-### 4.7. `void floydWarshall(Graphe *g)`
+### 4.6. `void displayPath(int u, int v, int **P)`
 
-**Rôle :** Appliquer l'algorithme de Floyd-Warshall au graphe, puis interagir avec l'utilisateur pour afficher des chemins minimaux.
+**Purpose:** Display the shortest path from `u` to `v` using matrix `P`.
 
-**Algorithme :**
+**Algorithm:**
+1. If `P[u][v] == -1`, no path exists
+2. Otherwise, follow successors until reaching `v`
 
-1. **Initialisation des matrices L et P :**
-   - `L[i][j] = 0` si `i == j`
-   - `L[i][j] = poids` si arête directe existe
-   - `L[i][j] = INFINITY` sinon
-   - `P[i][j] = j` si arête directe, `-1` sinon
+---
 
-2. **Boucle principale :**
-   ```
-   Pour chaque sommet intermédiaire k de 0 à n-1 :
-       Pour chaque couple (i, j) :
-           Si L[i][k] + L[k][j] < L[i][j] :
+### 4.7. `void floydWarshall(Graph *g)`
+
+**Purpose:** Apply the Floyd-Warshall algorithm to the graph and interactively display shortest paths.
+
+**Algorithm:**
+
+1. **Initialize matrices L and P:**
+   - `L[i][j] = 0` if `i == j`
+   - `L[i][j] = weight` if a direct edge exists
+   - `L[i][j] = INFINITY` otherwise
+   - `P[i][j] = j` if a direct edge exists, otherwise `-1`
+
+2. **Main loop:**
+   ```text
+   For each intermediate vertex k from 0 to n-1:
+       For each pair (i, j):
+           If L[i][k] + L[k][j] < L[i][j]:
                L[i][j] = L[i][k] + L[k][j]
                P[i][j] = P[i][k]
    ```
 
-3. **Détection de circuits absorbants :**
-   - Si `L[i][i] < 0` pour un sommet `i`, il y a un circuit absorbant
+3. **Negative cycle detection:**
+   - If `L[i][i] < 0` for some vertex `i`, a negative cycle exists
 
-4. **Interface utilisateur :**
-   - Si pas de circuit absorbant, proposer d'afficher des chemins minimaux
+4. **User interface:**
+   - If no negative cycle exists, allow shortest path queries
 
 ---
 
 ### 4.8. `int main(void)`
 
-**Rôle :** Coordonner l'exécution du programme.
+**Purpose:** Coordinate the execution of the program.
 
-**Boucle principale :**
-1. Appeler `choixTxt()` pour obtenir un fichier
-2. Appeler `choixGraphe(fichier)` pour choisir un graphe
-3. Appeler `floydWarshall(g)` pour l'analyser
-4. Libérer les ressources
-5. Proposer de traiter un autre graphe
+**Main loop:**
+1. Call `chooseTxt()` to select a file
+2. Call `chooseGraph(file)` to select a graph
+3. Call `floydWarshall(g)` to analyze it
+4. Free allocated resources
+5. Ask whether to process another graph
 
 ---
 
-## 5. Format des fichiers `.txt` de graphes
+## 5. Graph `.txt` File Format
 
-Pour chaque graphe :
+For each graph:
 
-```
+```text
 n
 m
 u1 v1 w1
@@ -306,15 +306,15 @@ u2 v2 w2
 um vm wm
 ```
 
-| Élément | Description |
+| Element | Description |
 |---------|-------------|
-| `n` | Nombre de sommets (numérotés de 0 à n-1) |
-| `m` | Nombre d'arêtes |
-| `ui vi wi` | Arête orientée de `ui` vers `vi` de poids `wi` |
+| `n` | Number of vertices (numbered from 0 to n-1) |
+| `m` | Number of edges |
+| `ui vi wi` | Directed edge from `ui` to `vi` with weight `wi` |
 
-**Exemple :**
+**Example:**
 
-```
+```text
 3
 3
 0 1 4
@@ -328,28 +328,28 @@ um vm wm
 0 3 10
 ```
 
-> Ce fichier contient deux graphes : le premier avec 3 sommets, le second avec 4 sommets.
+> This file contains two graphs: the first with 3 vertices and the second with 4 vertices.
 
 ---
 
-## 6. Résumé
+## 6. Summary
 
-Le programme montre comment :
-- ✅ Manipuler des fichiers et répertoires en C
-- ✅ Structurer des données (`struct Graphe`, matrices)
-- ✅ Implémenter un algorithme non trivial (Floyd-Warshall)
-- ✅ Gérer des allocations dynamiques et les libérer correctement
-- ✅ Interagir avec un utilisateur via la console
+This program demonstrates how to:
+- ✅ Manipulate files and directories in C
+- ✅ Structure data using `struct Graph` and matrices
+- ✅ Implement a non-trivial algorithm (Floyd-Warshall)
+- ✅ Manage dynamic memory allocation and deallocation correctly
+- ✅ Interact with the user through the console
 
-### Récapitulatif des fonctions
+### Function Summary
 
-| Fonction | Rôle |
-|----------|------|
-| `estTxt` | Filtrer les noms de fichiers |
-| `choixTxt` | Choisir un fichier de graphes |
-| `allouerMatrice` / `libererMatrice` | Gérer les matrices |
-| `afficherMatrice` | Représenter des matrices à l'écran |
-| `choixGraphe` | Lire, stocker, afficher et choisir un graphe |
-| `floydWarshall` | Cœur algorithmique (plus courts chemins + détection de cycles) |
-| `afficherChemin` | Reconstruire un chemin minimal |
-| `main` | Coordonner l'ensemble |
+| Function | Purpose |
+|----------|---------|
+| `isTxt` | Filter file names |
+| `chooseTxt` | Select a graph file |
+| `allocateMatrix` / `freeMatrix` | Manage matrices |
+| `displayMatrix` | Display matrices |
+| `chooseGraph` | Read, store, display, and choose a graph |
+| `floydWarshall` | Core algorithm (shortest paths + cycle detection) |
+| `displayPath` | Reconstruct shortest paths |
+| `main` | Coordinate the entire program |
